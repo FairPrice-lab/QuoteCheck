@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FairPrice — See if a contractor is overcharging you</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Upload a quote and instantly see if a contractor is overcharging you — based on official U.S. Bureau of Labor Statistics data. $6.99 one report or $17.99 unlimited for 30 days on this device." />
+
+  <style>
+    :root{
+      --bg:#07121f;
+      --panel:rgba(255,255,255,.03);
+      --text:#eaf2ff;
+      --muted:#a6b6d6;
+      --line:rgba(255,255,255,.10);
+      --trust:#6ee7ff;
+      --save:#86efac;
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1000px 520px at 18% -8%, rgba(110,231,255,.14), transparent 60%),
+        radial-gradient(900px 520px at 82% -10%, rgba(134,239,172,.10), transparent 60%),
+        var(--bg);
+      color:var(--text);
+    }
+    .container{max-width:860px;margin:0 auto;padding:34px 18px 60px}
+    .top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      padding:10px 12px;border:1px solid var(--line);border-radius:999px;
+      background:var(--panel);box-shadow:var(--shadow);
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:950}
+    .logo{width:30px;height:30px;border-radius:12px;background:linear-gradient(135deg,var(--trust),var(--save))}
+    .pill{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.02)}
+    h1{margin:18px 0 8px;font-size:40px;line-height:1.08}
+    .proof{margin:10px 0 6px;color:var(--trust);font-weight:950;font-size:14px;letter-spacing:.2px}
+    .micro{margin:0 0 14px;color:var(--muted);line-height:1.6;max-width:760px}
+
+    .card{
+      margin-top:18px;border:1px solid var(--line);border-radius:var(--r);
+      background:var(--panel);box-shadow:var(--shadow);overflow:hidden;
+    }
+    .cardHead{padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+    .cardBody{padding:16px}
+    label{display:block;font-size:13px;font-weight:850;margin:12px 0 7px}
+    input,select,textarea,button{
+      width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);
+      background:rgba(7,18,31,.55);color:var(--text);outline:none;
+    }
+    textarea{resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:780px){.row{grid-template-columns:1fr}}
+    .btn{
+      margin-top:12px;border:none;border-radius:14px;padding:12px 14px;font-weight:950;cursor:pointer;
+      color:#06121f;background:linear-gradient(135deg,var(--trust),var(--save));
+    }
+    .btn.secondary{
+      color:var(--text);background:rgba(255,255,255,.03);border:1px solid var(--line);
+    }
+    .pricingLine{margin-top:8px;color:var(--muted);font-size:13px}
+    .status{margin-top:10px;color:var(--muted);font-size:13px;white-space:pre-line}
+    .hint{
+      margin-top:10px;color:var(--muted);font-size:12px;line-height:1.5;
+      border:1px dashed rgba(255,255,255,.14);
+      padding:10px;border-radius:14px;background:rgba(255,255,255,.02);
+    }
+    .result{
+      display:none;margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
+      background:rgba(255,255,255,.02);padding:14px;
+    }
+    .resultTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+    .tag{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted)}
+    .bar{margin-top:10px;border:1px solid var(--line);border-radius:999px;height:14px;overflow:hidden;background:rgba(255,255,255,.04)}
+    .barFill{height:100%;width:0%;background:linear-gradient(90deg, rgba(134,239,172,.75), rgba(110,231,255,.75))}
+    .legend{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:6px}
+    .copy{margin-top:10px;line-height:1.55}
+    .divider{height:1px;background:var(--line);margin:14px 0}
+    .paybox{
+      border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02);
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+    }
+    .payBtns{display:flex;gap:10px;flex-wrap:wrap}
+    .btn2{
+      border:none;border-radius:14px;padding:10px 12px;font-weight:950;cursor:pointer;
+      color:#06121f;background:linear-gradient(135deg,var(--trust),var(--save));
+      white-space:nowrap;
+      width:auto;
+    }
+    .btn2.secondary{
+      color:var(--text);background:rgba(255,255,255,.03);border:1px solid var(--line);
+    }
+    .fine{
+      margin-top:12px;color:var(--muted);font-size:11px;line-height:1.5;
+    }
+    .fullOut{
+      margin-top:10px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(7,18,31,.35);
+      color:var(--text);
+      white-space:pre-line;
+      display:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="top">
+      <div class="brand"><div class="logo"></div>FairPrice</div>
+      <div class="pill">Quote fairness check</div>
+    </div>
+
+    <h1>See if a contractor is overcharging you.</h1>
+    <div class="proof">Based on official U.S. Bureau of Labor Statistics (BLS) data</div>
+    <p class="micro">Upload a quote → get a fairness breakdown in seconds, before you overpay.</p>
+
+    <div class="card">
+      <div class="cardHead">
+        <b>Upload Quote → Get Fairness Score</b>
+      </div>
+
+      <div class="cardBody">
+        <label>Upload quote (PDF / image)</label>
+        <input id="file" type="file" accept=".pdf,image/*" />
+
+        <label>Or paste quote text (optional)</label>
+        <textarea id="quoteText" rows="4" placeholder="Paste quote text here…"></textarea>
+
+        <div class="row">
+          <div>
+            <label>Quote category</label>
+            <select id="category">
+              <option>Home services (repairs/visit)</option>
+              <option>Home projects (install/remodel)</option>
+              <option>Auto (repair/body)</option>
+              <option>Moving / logistics</option>
+              <option>Professional services</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label>ZIP</label>
+            <input id="zip" inputmode="numeric" placeholder="e.g., 92618" />
+          </div>
+        </div>
+
+        <label>Total quoted price</label>
+        <input id="price" inputmode="decimal" placeholder="e.g., 514.19" />
+
+        <button class="btn" id="previewBtn">Upload Quote → Get Fairness Score</button>
+        <div class="pricingLine">Free preview • $6.99 one report • $17.99 unlimited for 30 days (this device)</div>
+
+        <div class="hint">
+          Preview uses public pricing signals from the <b>U.S. Bureau of Labor Statistics</b> and other open datasets.
+          <br><b>Important:</b> The $17.99 pass is tied to this browser/device for 30 days (clearing cookies resets access).
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div id="result" class="result">
+          <div class="resultTop">
+            <b id="resultTitle">Fairness Score</b>
+            <span class="tag" id="resultTag">—</span>
+          </div>
+
+          <div class="bar"><div id="barFill" class="barFill"></div></div>
+          <div class="legend"><span>Under</span><span>Fair</span><span>Over</span></div>
+
+          <div id="resultText" class="copy"></div>
+
+          <div class="divider"></div>
+
+          <button class="btn secondary" id="fullBtn" type="button">Get full report</button>
+          <div id="fullOut" class="fullOut"></div>
+
+          <div class="divider"></div>
+
+          <div class="paybox">
+            <div>
+              <b>Unlock full access</b>
+              <div class="fine">
+                <b>$6.99</b> unlocks the full report for this quote (this device)<br/>
+                <b>$17.99</b> unlocks unlimited checks for 30 days (this device)
+              </div>
+            </div>
+
+            <div class="payBtns">
+              <button class="btn2" type="button" id="unlockBtn">$6.99 • Unlock report</button>
+              <button class="btn2 secondary" type="button" id="passBtn">$17.99 • 30-Day Pass</button>
+            </div>
+          </div>
+
+          <div class="fine">
+            If you clear cookies or switch devices, you’ll lose access on that device.
+          </div>
+        </div>
+
+        <div class="fine">
+          Disclaimer: Informational estimates only. Not legal, financial, medical/health, tax, or insurance advice.
+          No guarantees. Use at your own risk.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const setStatus = m => $("status").textContent = m || "";
+  const setScale = s => $("barFill").style.width = (clamp01(s) * 100) + "%";
+
+  let lastQuoteId = null;
+  let lastQuoteHash = null;
+
+  function newId(){
+    if (crypto?.randomUUID) return crypto.randomUUID();
+    return String(Date.now()) + "_" + Math.random().toString(16).slice(2);
+  }
+
+  async function toBase64(file){
+    return new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(",")[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function payload(){
+    const f = $("file").files[0];
+    if (f && f.size > 6 * 1024 * 1024) throw new Error("File too large. Please upload ~5MB or less.");
+    return {
+      quoteId: lastQuoteId,
+      category: $("category").value,
+      zip: $("zip").value.trim(),
+      price: $("price").value.trim(),
+      quoteText: $("quoteText").value.trim(),
+      fileName: f ? f.name : null,
+      fileType: f ? f.type : null,
+      fileBase64: f ? await toBase64(f) : null
+    };
+  }
+
+  async function post(url, body){
+    const r = await fetch(url, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  function showPreview(d){
+    $("result").style.display = "block";
+    $("resultTag").textContent = (d.label || "").toUpperCase();
+    setScale(d.score ?? 0.5);
+    $("resultText").textContent = d.message || "";
+    $("fullOut").style.display = "none";
+    $("fullOut").textContent = "";
+    if (d.quoteId) lastQuoteId = d.quoteId;
+    if (d.quoteHash) lastQuoteHash = d.quoteHash;
+  }
+
+  async function startCheckout(kind){
+    // kind: "report" | "pass"
+    if (kind === "report" && !lastQuoteId) {
+      alert("Run the preview first so we can tie the $6.99 unlock to this quote.");
+      return;
+    }
+    const r = await post("/api/create-checkout-session", {
+      kind,
+      quoteId: lastQuoteId,
+      quoteHash: lastQuoteHash
+    });
+    window.location.href = r.url;
+  }
+
+  async function redeemIfNeeded(){
+    const params = new URLSearchParams(location.search);
+    const sid = params.get("session_id");
+    if (!sid) return;
+
+    setStatus("Activating your access…");
+    try{
+      const out = await post("/api/redeem", { session_id: sid });
+      setStatus(out?.message || "Access activated on this device.");
+
+      params.delete("session_id");
+      const newUrl = location.pathname + (params.toString() ? ("?" + params.toString()) : "");
+      history.replaceState({}, "", newUrl);
+    } catch(e){
+      setStatus("Payment activation error: " + (e?.message || "unknown"));
+    }
+  }
+
+  $("previewBtn").onclick = async () => {
+    setStatus("Checking price fairness…");
+    $("result").style.display = "none";
+    try{
+      if (!lastQuoteId) lastQuoteId = newId();
+      const d = await post("/api/analyze", { ...(await payload()), mode:"preview" });
+      showPreview(d);
+      setStatus("");
+    } catch(e){
+      setStatus("Error: " + (e?.message || "unknown"));
+    }
+  };
+
+  $("fullBtn").onclick = async () => {
+    $("fullOut").style.display = "block";
+    $("fullOut").textContent = "Generating full report…";
+    try{
+      const d = await post("/api/analyze", { ...(await payload()), mode:"full" });
+      const r = d?.full_report;
+      $("fullOut").textContent =
+        `Estimated fair range: ${r?.price_range || "—"}\n` +
+        `Estimated margin: ${r?.estimated_margin || "—"}\n` +
+        `Market note: ${r?.market_comparison || "—"}\n` +
+        `Tips: ${r?.tips || "—"}\n\n` +
+        `${r?.data_note || ""}`;
+    } catch(e){
+      $("fullOut").textContent = "Locked. Purchase required on this device.\n\n" + (e?.message || "");
+    }
+  };
+
+  $("unlockBtn").onclick = () => startCheckout("report");
+  $("passBtn").onclick = () => startCheckout("pass");
+
+  redeemIfNeeded();
+</script>
+</body>
+</html>
