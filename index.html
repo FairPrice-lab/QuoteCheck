@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>FairPrice — See if a contractor is overcharging you</title>
+  <title>FairPrice — Check if a contractor is overcharging you</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Upload a quote and instantly see if a contractor is overcharging you — based on official U.S. Bureau of Labor Statistics data. $6.99 one report or $17.99 unlimited for 30 days on this device." />
+  <meta name="description" content="See if a contractor is overcharging you — using official U.S. Bureau of Labor Statistics data. Upload a quote → get a fairness score. $6.99 one report or $17.99 unlimited (30 days, this device)." />
 
   <style>
     :root{
       --bg:#07121f;
-      --panel:rgba(255,255,255,.03);
+      --panel:rgba(255,255,255,.04);
+      --panel2:rgba(255,255,255,.02);
       --text:#eaf2ff;
       --muted:#a6b6d6;
-      --line:rgba(255,255,255,.10);
+      --line:rgba(255,255,255,.12);
       --trust:#6ee7ff;
       --save:#86efac;
       --shadow: 0 18px 40px rgba(0,0,0,.35);
@@ -28,7 +29,7 @@
         var(--bg);
       color:var(--text);
     }
-    .container{max-width:860px;margin:0 auto;padding:34px 18px 60px}
+    .container{max-width:860px;margin:0 auto;padding:34px 18px 64px}
     .top{
       display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
       padding:10px 12px;border:1px solid var(--line);border-radius:999px;
@@ -37,38 +38,65 @@
     .brand{display:flex;align-items:center;gap:10px;font-weight:950}
     .logo{width:30px;height:30px;border-radius:12px;background:linear-gradient(135deg,var(--trust),var(--save))}
     .pill{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.02)}
-    h1{margin:18px 0 8px;font-size:40px;line-height:1.08}
-    .proof{margin:10px 0 6px;color:var(--trust);font-weight:950;font-size:14px;letter-spacing:.2px}
-    .micro{margin:0 0 14px;color:var(--muted);line-height:1.6;max-width:760px}
+
+    h1{margin:18px 0 8px;font-size:42px;line-height:1.07;letter-spacing:-.2px}
+    .proof{margin:8px 0 8px;color:var(--trust);font-weight:950;font-size:14px}
+    .micro{margin:0;color:var(--muted);line-height:1.6;max-width:760px}
 
     .card{
       margin-top:18px;border:1px solid var(--line);border-radius:var(--r);
       background:var(--panel);box-shadow:var(--shadow);overflow:hidden;
     }
-    .cardHead{padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
     .cardBody{padding:16px}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;align-items:end}
+    @media(max-width:820px){.grid{grid-template-columns:1fr}}
+
     label{display:block;font-size:13px;font-weight:850;margin:12px 0 7px}
     input,select,textarea,button{
       width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);
       background:rgba(7,18,31,.55);color:var(--text);outline:none;
     }
     textarea{resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media(max-width:780px){.row{grid-template-columns:1fr}}
-    .btn{
-      margin-top:12px;border:none;border-radius:14px;padding:12px 14px;font-weight:950;cursor:pointer;
+
+    .cta{
+      margin-top:12px;border:none;border-radius:14px;padding:13px 14px;font-weight:1000;cursor:pointer;
       color:#06121f;background:linear-gradient(135deg,var(--trust),var(--save));
     }
-    .btn.secondary{
-      color:var(--text);background:rgba(255,255,255,.03);border:1px solid var(--line);
+    .subline{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.5}
+    .subline b{color:var(--text)}
+    .trustline{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.16);
+      background:var(--panel2);
     }
-    .pricingLine{margin-top:8px;color:var(--muted);font-size:13px}
+
+    details.adv{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      overflow:hidden;
+    }
+    details.adv summary{
+      cursor:pointer;
+      padding:12px 12px;
+      color:var(--muted);
+      font-weight:900;
+      list-style:none;
+      user-select:none;
+    }
+    details.adv summary::-webkit-details-marker{display:none}
+    .advInner{padding:0 12px 12px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:720px){.row{grid-template-columns:1fr}}
+
     .status{margin-top:10px;color:var(--muted);font-size:13px;white-space:pre-line}
-    .hint{
-      margin-top:10px;color:var(--muted);font-size:12px;line-height:1.5;
-      border:1px dashed rgba(255,255,255,.14);
-      padding:10px;border-radius:14px;background:rgba(255,255,255,.02);
-    }
+
     .result{
       display:none;margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
       background:rgba(255,255,255,.02);padding:14px;
@@ -79,33 +107,64 @@
     .barFill{height:100%;width:0%;background:linear-gradient(90deg, rgba(134,239,172,.75), rgba(110,231,255,.75))}
     .legend{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:6px}
     .copy{margin-top:10px;line-height:1.55}
+
     .divider{height:1px;background:var(--line);margin:14px 0}
-    .paybox{
-      border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(255,255,255,.02);
-      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+
+    .secondaryBtn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      font-weight:950;
+      cursor:pointer;
+      border-radius:14px;
+      padding:11px 12px;
     }
-    .payBtns{display:flex;gap:10px;flex-wrap:wrap}
-    .btn2{
-      border:none;border-radius:14px;padding:10px 12px;font-weight:950;cursor:pointer;
-      color:#06121f;background:linear-gradient(135deg,var(--trust),var(--save));
-      white-space:nowrap;
-      width:auto;
-    }
-    .btn2.secondary{
-      color:var(--text);background:rgba(255,255,255,.03);border:1px solid var(--line);
-    }
-    .fine{
-      margin-top:12px;color:var(--muted);font-size:11px;line-height:1.5;
-    }
+
     .fullOut{
+      display:none;
       margin-top:10px;
       padding:12px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(7,18,31,.35);
-      color:var(--text);
       white-space:pre-line;
+      line-height:1.55;
+    }
+
+    .paybox{
       display:none;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(255,255,255,.02);
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .payHead{font-weight:1000}
+    .payFine{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}
+    .payBtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn2{
+      border:none;border-radius:14px;padding:10px 12px;font-weight:1000;cursor:pointer;
+      color:#06121f;background:linear-gradient(135deg,var(--trust),var(--save));
+      white-space:nowrap;width:auto;
+    }
+    .btn2.secondary{
+      color:var(--text);
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .fine{
+      margin-top:12px;color:var(--muted);font-size:11px;line-height:1.5;
+    }
+
+    /* tiny AB label (optional for debugging, hidden by default) */
+    .abBadge{
+      display:none;
+      margin-top:10px;
+      font-size:11px;
+      color:var(--muted);
+      opacity:.8;
     }
   </style>
 </head>
@@ -114,60 +173,72 @@
   <div class="container">
     <div class="top">
       <div class="brand"><div class="logo"></div>FairPrice</div>
-      <div class="pill">Quote fairness check</div>
+      <div class="pill">Contractor quote check</div>
     </div>
 
-    <h1>See if a contractor is overcharging you.</h1>
-    <div class="proof">Based on official U.S. Bureau of Labor Statistics (BLS) data</div>
-    <p class="micro">Upload a quote → get a fairness breakdown in seconds, before you overpay.</p>
+    <!-- A/B text targets -->
+    <h1 id="headline">See if a contractor is overcharging you.</h1>
+    <div class="proof" id="proof">Based on official U.S. Bureau of Labor Statistics (BLS) data</div>
+    <p class="micro" id="micro">Upload a quote → get a fairness breakdown in seconds, before you overpay.</p>
 
     <div class="card">
-      <div class="cardHead">
-        <b>Upload Quote → Get Fairness Score</b>
-      </div>
-
       <div class="cardBody">
-        <label>Upload quote (PDF / image)</label>
-        <input id="file" type="file" accept=".pdf,image/*" />
-
-        <label>Or paste quote text (optional)</label>
-        <textarea id="quoteText" rows="4" placeholder="Paste quote text here…"></textarea>
-
-        <div class="row">
+        <div class="grid">
           <div>
-            <label>Quote category</label>
-            <select id="category">
-              <option>Home services (repairs/visit)</option>
-              <option>Home projects (install/remodel)</option>
-              <option>Auto (repair/body)</option>
-              <option>Moving / logistics</option>
-              <option>Professional services</option>
-              <option>Other</option>
-            </select>
+            <label>Upload quote (PDF / image)</label>
+            <input id="file" type="file" accept=".pdf,image/*" />
           </div>
 
           <div>
-            <label>ZIP</label>
-            <input id="zip" inputmode="numeric" placeholder="e.g., 92618" />
+            <label>Total quoted price</label>
+            <input id="price" inputmode="decimal" placeholder="e.g., 514.19" />
           </div>
         </div>
 
-        <label>Total quoted price</label>
-        <input id="price" inputmode="decimal" placeholder="e.g., 514.19" />
+        <!-- One primary CTA -->
+        <button class="cta" id="previewBtn">Upload Quote → Get Fairness Score</button>
 
-        <button class="btn" id="previewBtn">Upload Quote → Get Fairness Score</button>
-        <div class="pricingLine">Free preview • $6.99 one report • $17.99 unlimited for 30 days (this device)</div>
-
-        <div class="hint">
-          Preview uses public pricing signals from the <b>U.S. Bureau of Labor Statistics</b> and other open datasets.
-          <br><b>Important:</b> The $17.99 pass is tied to this browser/device for 30 days (clearing cookies resets access).
+        <div class="subline" id="pricingLine">
+          <b>Free preview</b> • $6.99 one report • $17.99 unlimited (30 days, this device)
         </div>
+
+        <div class="trustline" id="trustLine">
+          <b>No card needed for preview.</b> Secure checkout by Stripe.
+          <br/>BLS CPI is used to adjust benchmarks by region; results are informational estimates.
+        </div>
+
+        <details class="adv">
+          <summary>Advanced options (optional)</summary>
+          <div class="advInner">
+            <div class="row">
+              <div>
+                <label>Category</label>
+                <select id="category">
+                  <option>Home services (repairs/visit)</option>
+                  <option>Home projects (install/remodel)</option>
+                  <option>Auto (repair/body)</option>
+                  <option>Moving / logistics</option>
+                  <option>Professional services</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label>ZIP (for regional adjustment)</label>
+                <input id="zip" inputmode="numeric" placeholder="e.g., 92618" />
+              </div>
+            </div>
+
+            <label>Paste quote text (optional)</label>
+            <textarea id="quoteText" rows="4" placeholder="Paste quote text here…"></textarea>
+          </div>
+        </details>
 
         <div id="status" class="status"></div>
+        <div id="abBadge" class="abBadge"></div>
 
         <div id="result" class="result">
           <div class="resultTop">
-            <b id="resultTitle">Fairness Score</b>
+            <b>Fairness Score</b>
             <span class="tag" id="resultTag">—</span>
           </div>
 
@@ -178,28 +249,25 @@
 
           <div class="divider"></div>
 
-          <button class="btn secondary" id="fullBtn" type="button">Get full report</button>
+          <button class="secondaryBtn" id="fullBtn" type="button">View full report</button>
           <div id="fullOut" class="fullOut"></div>
 
           <div class="divider"></div>
 
-          <div class="paybox">
-            <div>
-              <b>Unlock full access</b>
-              <div class="fine">
-                <b>$6.99</b> unlocks the full report for this quote (this device)<br/>
+          <div id="paybox" class="paybox">
+            <div style="min-width:260px;flex:1">
+              <div class="payHead">Unlock full access</div>
+              <div class="payFine">
+                <b>$6.99</b> unlocks this quote’s full report (this device)<br/>
                 <b>$17.99</b> unlocks unlimited checks for 30 days (this device)
+                <br/><span style="color:var(--muted)">Clearing cookies or switching devices resets access.</span>
+              </div>
+
+              <div class="payBtns">
+                <button class="btn2" type="button" id="unlockBtn">$6.99 • Unlock report</button>
+                <button class="btn2 secondary" type="button" id="passBtn">$17.99 • 30-Day Pass</button>
               </div>
             </div>
-
-            <div class="payBtns">
-              <button class="btn2" type="button" id="unlockBtn">$6.99 • Unlock report</button>
-              <button class="btn2 secondary" type="button" id="passBtn">$17.99 • 30-Day Pass</button>
-            </div>
-          </div>
-
-          <div class="fine">
-            If you clear cookies or switch devices, you’ll lose access on that device.
           </div>
         </div>
 
@@ -212,6 +280,68 @@
   </div>
 
 <script>
+  // ---------------------------
+  // A/B variant (client-side)
+  // ---------------------------
+  const AB_KEY = "fp_ab_v1";
+  function pickVariant() {
+    const params = new URLSearchParams(location.search);
+    const forced = (params.get("ab") || "").toUpperCase();
+    if (forced === "A" || forced === "B") {
+      try { localStorage.setItem(AB_KEY, forced); } catch {}
+      return forced;
+    }
+    try {
+      const saved = (localStorage.getItem(AB_KEY) || "").toUpperCase();
+      if (saved === "A" || saved === "B") return saved;
+    } catch {}
+    const v = Math.random() < 0.5 ? "A" : "B";
+    try { localStorage.setItem(AB_KEY, v); } catch {}
+    return v;
+  }
+
+  const VARIANT = pickVariant();
+
+  function applyVariant(v) {
+    // Variant A: direct “overcharging” (best match to search intent)
+    // Variant B: “before you approve” framing (reduces anxiety + adds urgency)
+    const A = {
+      headline: "See if a contractor is overcharging you.",
+      micro: "Upload a quote → get a fairness breakdown in seconds, before you overpay.",
+      cta: "Upload Quote → Get Fairness Score"
+    };
+
+    const B = {
+      headline: "Know if you’re being overcharged — before you approve the quote.",
+      micro: "Upload a quote → get a fast fairness check you can use to negotiate.",
+      cta: "Upload Quote → Get Fairness Score"
+    };
+
+    const copy = (v === "B") ? B : A;
+
+    document.getElementById("headline").textContent = copy.headline;
+    document.getElementById("micro").textContent = copy.micro;
+    document.getElementById("previewBtn").textContent = copy.cta;
+
+    // Optional: update tab title slightly for consistency
+    document.title = (v === "B")
+      ? "FairPrice — Know if you're being overcharged"
+      : "FairPrice — Check if a contractor is overcharging you";
+
+    // Debug: show badge if you add ?debug=1
+    const params = new URLSearchParams(location.search);
+    if (params.get("debug") === "1") {
+      const b = document.getElementById("abBadge");
+      b.style.display = "block";
+      b.textContent = `AB Variant: ${v} (force with ?ab=A or ?ab=B)`;
+    }
+  }
+
+  applyVariant(VARIANT);
+
+  // ---------------------------
+  // App logic
+  // ---------------------------
   const $ = (id) => document.getElementById(id);
   const clamp01 = x => Math.max(0, Math.min(1, x));
   const setStatus = m => $("status").textContent = m || "";
@@ -237,15 +367,17 @@
   async function payload(){
     const f = $("file").files[0];
     if (f && f.size > 6 * 1024 * 1024) throw new Error("File too large. Please upload ~5MB or less.");
+
     return {
       quoteId: lastQuoteId,
-      category: $("category").value,
-      zip: $("zip").value.trim(),
+      category: $("category") ? $("category").value : "Other",
+      zip: $("zip") ? $("zip").value.trim() : "",
       price: $("price").value.trim(),
-      quoteText: $("quoteText").value.trim(),
+      quoteText: $("quoteText") ? $("quoteText").value.trim() : "",
       fileName: f ? f.name : null,
       fileType: f ? f.type : null,
-      fileBase64: f ? await toBase64(f) : null
+      fileBase64: f ? await toBase64(f) : null,
+      abVariant: VARIANT
     };
   }
 
@@ -266,20 +398,22 @@
     $("resultText").textContent = d.message || "";
     $("fullOut").style.display = "none";
     $("fullOut").textContent = "";
+    $("paybox").style.display = "none";
+
     if (d.quoteId) lastQuoteId = d.quoteId;
     if (d.quoteHash) lastQuoteHash = d.quoteHash;
   }
 
   async function startCheckout(kind){
-    // kind: "report" | "pass"
     if (kind === "report" && !lastQuoteId) {
-      alert("Run the preview first so we can tie the $6.99 unlock to this quote.");
+      alert("Run the preview first so the $6.99 unlock can be tied to this quote.");
       return;
     }
     const r = await post("/api/create-checkout-session", {
       kind,
       quoteId: lastQuoteId,
-      quoteHash: lastQuoteHash
+      quoteHash: lastQuoteHash,
+      abVariant: VARIANT
     });
     window.location.href = r.url;
   }
@@ -302,11 +436,28 @@
     }
   }
 
+  // One CTA behavior: if no file/text, open file picker
   $("previewBtn").onclick = async () => {
+    const priceVal = $("price").value.trim();
+    const fileChosen = !!$("file").files?.[0];
+    const quoteTextVal = ($("quoteText")?.value || "").trim();
+
+    if (!fileChosen && !quoteTextVal) {
+      $("file").click();
+      return;
+    }
+
+    if (!priceVal) {
+      setStatus("Enter the total quoted price to get a fairness score.");
+      $("price").focus();
+      return;
+    }
+
     setStatus("Checking price fairness…");
     $("result").style.display = "none";
+
     try{
-      if (!lastQuoteId) lastQuoteId = newId();
+      lastQuoteId = newId();
       const d = await post("/api/analyze", { ...(await payload()), mode:"preview" });
       showPreview(d);
       setStatus("");
@@ -318,6 +469,8 @@
   $("fullBtn").onclick = async () => {
     $("fullOut").style.display = "block";
     $("fullOut").textContent = "Generating full report…";
+    $("paybox").style.display = "none";
+
     try{
       const d = await post("/api/analyze", { ...(await payload()), mode:"full" });
       const r = d?.full_report;
@@ -328,7 +481,8 @@
         `Tips: ${r?.tips || "—"}\n\n` +
         `${r?.data_note || ""}`;
     } catch(e){
-      $("fullOut").textContent = "Locked. Purchase required on this device.\n\n" + (e?.message || "");
+      $("fullOut").textContent = "Full report is locked on this device.\nUnlock to view benchmark ranges and next steps.";
+      $("paybox").style.display = "flex";
     }
   };
 
