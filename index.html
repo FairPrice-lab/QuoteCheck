@@ -199,7 +199,7 @@
         <button class="cta" id="previewBtn">Upload Quote → Get Fairness Score</button>
 
         <div class="subline" id="pricingLine">
-          <b>Free preview</b> • $6.99 one report • $17.99 unlimited (30 days, this device)
+          <b>Free preview</b> • $6.99 one report • $17.99 full access (30 days, this device)
         </div>
 
         <div class="trustline" id="trustLine">
@@ -259,13 +259,13 @@
               <div class="payHead">Unlock full access</div>
               <div class="payFine">
                 <b>$6.99</b> unlocks this quote’s full report (this device)<br/>
-                <b>$17.99</b> unlocks unlimited checks for 30 days (this device)
+                <b>$17.99</b> full access for 30 days (this device)
                 <br/><span style="color:var(--muted)">Clearing cookies or switching devices resets access.</span>
               </div>
 
               <div class="payBtns">
                 <button class="btn2" type="button" id="unlockBtn">$6.99 • Unlock report</button>
-                <button class="btn2 secondary" type="button" id="passBtn">$17.99 • 30-Day Pass</button>
+                <button class="btn2 secondary" type="button" id="passBtn">$17.99 • Full access</button>
               </div>
             </div>
           </div>
@@ -352,144 +352,4 @@
 
   function newId(){
     if (crypto?.randomUUID) return crypto.randomUUID();
-    return String(Date.now()) + "_" + Math.random().toString(16).slice(2);
-  }
-
-  async function toBase64(file){
-    return new Promise((res, rej)=>{
-      const r = new FileReader();
-      r.onload = () => res(r.result.split(",")[1]);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-  }
-
-  async function payload(){
-    const f = $("file").files[0];
-    if (f && f.size > 6 * 1024 * 1024) throw new Error("File too large. Please upload ~5MB or less.");
-
-    return {
-      quoteId: lastQuoteId,
-      category: $("category") ? $("category").value : "Other",
-      zip: $("zip") ? $("zip").value.trim() : "",
-      price: $("price").value.trim(),
-      quoteText: $("quoteText") ? $("quoteText").value.trim() : "",
-      fileName: f ? f.name : null,
-      fileType: f ? f.type : null,
-      fileBase64: f ? await toBase64(f) : null,
-      abVariant: VARIANT
-    };
-  }
-
-  async function post(url, body){
-    const r = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(body)
-    });
-    if(!r.ok) throw new Error(await r.text());
-    return r.json();
-  }
-
-  function showPreview(d){
-    $("result").style.display = "block";
-    $("resultTag").textContent = (d.label || "").toUpperCase();
-    setScale(d.score ?? 0.5);
-    $("resultText").textContent = d.message || "";
-    $("fullOut").style.display = "none";
-    $("fullOut").textContent = "";
-    $("paybox").style.display = "none";
-
-    if (d.quoteId) lastQuoteId = d.quoteId;
-    if (d.quoteHash) lastQuoteHash = d.quoteHash;
-  }
-
-  async function startCheckout(kind){
-    if (kind === "report" && !lastQuoteId) {
-      alert("Run the preview first so the $6.99 unlock can be tied to this quote.");
-      return;
-    }
-    const r = await post("/api/create-checkout-session", {
-      kind,
-      quoteId: lastQuoteId,
-      quoteHash: lastQuoteHash,
-      abVariant: VARIANT
-    });
-    window.location.href = r.url;
-  }
-
-  async function redeemIfNeeded(){
-    const params = new URLSearchParams(location.search);
-    const sid = params.get("session_id");
-    if (!sid) return;
-
-    setStatus("Activating your access…");
-    try{
-      const out = await post("/api/redeem", { session_id: sid });
-      setStatus(out?.message || "Access activated on this device.");
-
-      params.delete("session_id");
-      const newUrl = location.pathname + (params.toString() ? ("?" + params.toString()) : "");
-      history.replaceState({}, "", newUrl);
-    } catch(e){
-      setStatus("Payment activation error: " + (e?.message || "unknown"));
-    }
-  }
-
-  // One CTA behavior: if no file/text, open file picker
-  $("previewBtn").onclick = async () => {
-    const priceVal = $("price").value.trim();
-    const fileChosen = !!$("file").files?.[0];
-    const quoteTextVal = ($("quoteText")?.value || "").trim();
-
-    if (!fileChosen && !quoteTextVal) {
-      $("file").click();
-      return;
-    }
-
-    if (!priceVal) {
-      setStatus("Enter the total quoted price to get a fairness score.");
-      $("price").focus();
-      return;
-    }
-
-    setStatus("Checking price fairness…");
-    $("result").style.display = "none";
-
-    try{
-      lastQuoteId = newId();
-      const d = await post("/api/analyze", { ...(await payload()), mode:"preview" });
-      showPreview(d);
-      setStatus("");
-    } catch(e){
-      setStatus("Error: " + (e?.message || "unknown"));
-    }
-  };
-
-  $("fullBtn").onclick = async () => {
-    $("fullOut").style.display = "block";
-    $("fullOut").textContent = "Generating full report…";
-    $("paybox").style.display = "none";
-
-    try{
-      const d = await post("/api/analyze", { ...(await payload()), mode:"full" });
-      const r = d?.full_report;
-      $("fullOut").textContent =
-        `Estimated fair range: ${r?.price_range || "—"}\n` +
-        `Estimated margin: ${r?.estimated_margin || "—"}\n` +
-        `Market note: ${r?.market_comparison || "—"}\n` +
-        `Tips: ${r?.tips || "—"}\n\n` +
-        `${r?.data_note || ""}`;
-    } catch(e){
-      $("fullOut").textContent = "Full report is locked on this device.\nUnlock to view benchmark ranges and next steps.";
-      $("paybox").style.display = "flex";
-    }
-  };
-
-  $("unlockBtn").onclick = () => startCheckout("report");
-  $("passBtn").onclick = () => startCheckout("pass");
-
-  redeemIfNeeded();
-</script>
-</body>
-</html>
+    return String(Date.now()) + "_" + Math.random().toStrin_
