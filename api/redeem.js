@@ -1,75 +1,65 @@
-// /api/redeem.js
-// Redeems a Stripe Checkout Session and grants device-bound access via signed cookie.
-//
-// - kind "pass": grants 30-day device pass (unlimited full checks on this device)
-// - kind "report": grants one-time report unlock for quoteId (full report for that quote on this device)
-//
-// No DB required. Clearing cookies resets access.
+import Stripe from "stripe";
 
-const Stripe = require("stripe");
-const {
-  loadEntitlements,
-  saveEntitlements,
-  grantPass,
-  grantReport,
-  nowSec,
-  PASS_DAYS,
-} = require("./_entitlements");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2024-06-20",
+});
 
-module.exports = async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
+function setCookie(res, name, value, maxAgeSeconds) {
+  const secure = true;
+  const sameSite = "Lax";
+  const parts = [
+    `${name}=${encodeURIComponent(value)}`,
+    `Path=/`,
+    `Max-Age=${maxAgeSeconds}`,
+    `SameSite=${sameSite}`,
+    secure ? "Secure" : "",
+    "HttpOnly"
+  ].filter(Boolean);
 
+  // allow multiple cookies
+  const prev = res.getHeader("Set-Cookie");
+  const next = Array.isArray(prev) ? prev.concat(parts.join("; ")) : prev ? [prev, parts.join("; ")] : [parts.join("; ")];
+  res.setHeader("Set-Cookie", next);
+}
+
+export default async function handler(req, res) {
   try {
-    const { session_id } = req.body || {};
+    if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+    if (!process.env.STRIPE_SECRET_KEY) return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY" });
+
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const session_id = body?.session_id;
+
     if (!session_id) return res.status(400).json({ error: "Missing session_id" });
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const session = await stripe.checkout.sessions.retrieve(session_id);
 
-    // Expand subscription if this was a subscription checkout fallback
-    const session = await stripe.checkout.sessions.retrieve(session_id, { expand: ["subscription"] });
-
-    // Validate payment completion
-    const paid =
-      session.payment_status === "paid" ||
-      (session.mode === "subscription" && session.status === "complete");
-
-    if (!paid) return res.status(402).json({ error: "Payment not completed." });
+    if (!session || session.payment_status !== "paid") {
+      return res.status(402).json({ error: "Payment not completed" });
+    }
 
     const kind = session.metadata?.kind || "";
     const quoteId = session.metadata?.quoteId || "";
     const quoteHash = session.metadata?.quoteHash || "";
 
-    const { ent } = loadEntitlements(req);
-
-    let message = "Access activated on this device.";
-
+    // Entitlements:
+    // - pass: 30 days full access on this device
+    // - report: unlock full report for this quoteId/hash on this device
     if (kind === "pass") {
-      // If subscription mode, prefer expiry based on subscription period end.
-      if (session.mode === "subscription" && session.subscription?.current_period_end) {
-        const exp = Number(session.subscription.current_period_end);
-        ent.passExp = Math.max(ent.passExp || 0, exp);
-        message = "Pass activated on this device (until the current billing period ends).";
-      } else {
-        grantPass(ent);
-        message = `Pass activated on this device (${PASS_DAYS} days).`;
-      }
-    } else if (kind === "report") {
-      if (!quoteId) return res.status(400).json({ error: "Missing quoteId in session metadata." });
-      grantReport(ent, quoteId, quoteHash);
-      message = `Report unlocked for this quote on this device (${PASS_DAYS} days).`;
-    } else {
-      return res.status(400).json({ error: "Unknown purchase kind." });
+      // 30 days
+      setCookie(res, "fp_pass", "1", 30 * 24 * 60 * 60);
+      return res.status(200).json({ ok: true, message: "Full access activated for 30 days on this device." });
     }
 
-    saveEntitlements(res, ent);
+    if (kind === "report") {
+      // 30 days to view this report again (same device)
+      const token = `${quoteId}.${quoteHash || ""}`;
+      setCookie(res, "fp_report", token, 30 * 24 * 60 * 60);
+      return res.status(200).json({ ok: true, message: "Report unlocked on this device." });
+    }
 
-    return res.status(200).json({
-      ok: true,
-      kind,
-      message,
-      now: nowSec(),
-    });
-  } catch (e) {
-    return res.status(500).json({ error: "Redeem error", detail: String(e?.message || e) });
+    return res.status(400).json({ error: "Unknown entitlement kind" });
+  } catch (err) {
+    return res.status(500).json({ error: "Redeem error", detail: String(err?.message || err) });
   }
-};
+}
