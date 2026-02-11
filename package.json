@@ -1,7 +1,9 @@
 {
-  "name": "fairprice-mvp",
+  "name": "fairprice",
   "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "dependencies": {
-    "stripe": "^16.0.0"
+    "stripe": "^16.12.0"
   }
 }
