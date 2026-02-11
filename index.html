@@ -3,560 +3,450 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>FairPrice | Check if a Contractor Quote Is Fair Before You Overpay</title>
-  <meta name="description" content="Upload one contractor quote and get a fairness breakdown in seconds using official U.S. labor benchmark data. Check pricing before you sign." />
-  <meta name="keywords" content="contractor quote check,is this contractor quote fair,contractor overcharging,home repair quote checker,roof quote check,bathroom remodel estimate,kitchen remodel quote,HVAC replacement quote,plumbing quote check,electrical quote estimate" />
-  <meta name="robots" content="index,follow" />
-  <meta name="theme-color" content="#07182c" />
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="FairPrice | Check if a Contractor Quote Is Fair" />
-  <meta property="og:description" content="Upload your quote. Get a fairness breakdown in seconds before you overpay." />
-  <meta property="og:type" content="website" />
+  <title>FairPrice — Quote Check</title>
+  <meta name="description" content="Upload or paste a contractor quote and get a fairness score with a clear breakdown." />
 
   <style>
-    :root{
-      --bg: #051427;
-      --bg2:#061a31;
-      --panel:#0b213a;
-      --panel2:#0a1d34;
-      --stroke:rgba(165,196,229,.2);
-      --text:#e8f2ff;
-      --muted:#9fb8d3;
-      --accent:#69d9ec;
-      --accent2:#7ce8aa;
-      --btnText:#07273f;
-      --ok:#9ef7bf;
-      --warn:#ffd8a8;
-      --bad:#ffb4b4;
+    :root { color-scheme: light; }
+
+    /* Global scale down (biggest “make it smaller” win) */
+    html { font-size: 15px; }
+    body {
+      margin: 0;
+      line-height: 1.35;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1000px 450px at 15% -20%, #10416f 0%, transparent 55%),
-        linear-gradient(180deg,var(--bg2),var(--bg));
-      min-height:100vh;
-      line-height:1.45;
+    /* Layout */
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 16px 42px;
     }
 
-    .wrap{
-      width:min(1180px, 92vw);
-      margin:34px auto 50px;
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      border:1px solid var(--stroke);
-      background:rgba(8,25,45,.55);
-      border-radius:999px;
-      padding:12px 16px;
-      margin-bottom:26px;
-      backdrop-filter:blur(6px);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      font-weight:800;
-      font-size:40px;
-      letter-spacing:.2px;
+    .logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: #0f172a;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      flex: 0 0 auto;
     }
 
-    .dot{
-      width:48px;height:48px;border-radius:14px;
-      background:linear-gradient(145deg,var(--accent),var(--accent2));
-      box-shadow:0 10px 24px rgba(105,217,236,.28);
-      flex:0 0 auto;
+    .titleBlock { min-width: 0; }
+    h1 {
+      font-size: 18px;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .chip{
-      border:1px solid var(--stroke);
-      border-radius:999px;
-      padding:10px 16px;
-      color:#d1e6ff;
-      font-weight:600;
-      font-size:18px;
-      white-space:nowrap;
+    .sub {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #475569;
     }
 
-    h1{
-      margin:0 0 8px;
-      font-size:clamp(42px,6vw,72px);
-      line-height:1.03;
-      letter-spacing:-.02em;
+    .pill {
+      flex: 0 0 auto;
+      font-size: 12px;
+      color: #475569;
+      background: #eef2f7;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 6px 10px;
     }
 
-    .sub{
-      margin:0;
-      color:var(--accent);
-      font-size:clamp(22px,2.2vw,35px);
-      font-weight:800;
+    /* Card */
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
     }
 
-    .lead{
-      margin:12px 0 0;
-      color:#d2e4ff;
-      font-size:clamp(20px,1.9vw,31px);
-      max-width:980px;
+    .grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
     }
 
-    .trust{
-      display:flex;flex-wrap:wrap;gap:10px;
-      margin-top:16px;
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
-    .trust span{
-      border:1px solid var(--stroke);
-      border-radius:999px;
-      padding:8px 12px;
-      background:rgba(8,25,45,.55);
-      color:#d7e9ff;
-      font-size:14px;
-      font-weight:600;
+    @media (max-width: 640px) {
+      .row2 { grid-template-columns: 1fr; }
     }
 
-    .panel{
-      margin-top:24px;
-      padding:22px;
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border:1px solid var(--stroke);
-      border-radius:24px;
-      box-shadow:0 22px 60px rgba(0,0,0,.35);
+    label {
+      display: block;
+      font-size: 12px;
+      color: #334155;
+      margin: 0 0 6px;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:1.25fr .75fr;
-      gap:14px;
+    input, select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 13px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 8px 10px;
+      outline: none;
+      background: #fff;
+      color: #0f172a;
     }
 
-    .field label{
-      display:block;
-      margin:0 0 10px;
-      font-size:31px;
-      font-weight:800;
-      color:#edf5ff;
+    input { height: 36px; }
+    textarea { min-height: 110px; resize: vertical; padding-top: 9px; padding-bottom: 9px; }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #94a3b8;
+      box-shadow: 0 0 0 3px rgba(148,163,184,.25);
     }
 
-    .input{
-      width:100%;
-      height:66px;
-      border-radius:16px;
-      border:1px solid var(--stroke);
-      background:#07182c;
-      color:#e9f4ff;
-      padding:0 16px;
-      font-size:23px;
-      outline:none;
-    }
-    .input::placeholder{color:#7f9dbc}
-
-    .file-shell{
-      display:flex;align-items:center;gap:12px;
-      height:66px;
-      border-radius:16px;
-      border:1px solid var(--stroke);
-      background:#07182c;
-      padding:8px 10px;
+    .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
 
-    .file-shell input[type=file]{
-      display:none;
+    button, .btnLink {
+      height: 36px;
+      font-size: 13px;
+      border-radius: 10px;
+      padding: 0 12px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      gap: 8px;
+      user-select: none;
     }
 
-    .file-btn{
-      border:0;
-      border-radius:10px;
-      padding:10px 14px;
-      cursor:pointer;
-      background:#f2f7ff;
-      color:#102943;
-      font-weight:700;
-      font-size:16px;
+    button.primary, .btnLink.primary {
+      background: #0f172a;
+      border-color: #0f172a;
+      color: #fff;
     }
 
-    .file-name{
-      color:#c9dff4;
-      font-size:19px;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+    button:hover, .btnLink:hover { background: #f8fafc; }
+    button.primary:hover, .btnLink.primary:hover { background: #111c33; }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
-    .cta{
-      margin-top:14px;
-      width:100%;
-      height:72px;
-      border:0;
-      border-radius:18px;
-      font-weight:900;
-      font-size:37px;
-      color:var(--btnText);
-      background:linear-gradient(90deg,var(--accent),var(--accent2));
-      cursor:pointer;
-      transition:transform .12s ease, filter .12s ease;
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 14px 0;
     }
 
-    .cta:hover{transform:translateY(-1px);filter:brightness(1.03)}
-    .cta:disabled{opacity:.7;cursor:not-allowed;transform:none}
-
-    .pricing{
-      margin-top:14px;
-      color:#d8e9ff;
-      font-size:33px;
-      font-weight:500;
+    .help {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #64748b;
     }
 
-    .pricing strong{font-weight:900;color:white}
-
-    .checkout-row{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+    /* Output */
+    .out {
+      margin-top: 12px;
+      background: #0b1220;
+      color: #e2e8f0;
+      border-radius: 12px;
+      border: 1px solid #0f172a;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      overflow-x: auto;
+      white-space: pre-wrap;
     }
 
-    .buy{
-      display:block;
-      text-align:center;
-      text-decoration:none;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      padding:12px 14px;
-      font-weight:800;
-      font-size:17px;
-      color:#0d2740;
-      background:linear-gradient(90deg,#c7ecf4,#cdf6de);
+    .muted {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 10px;
     }
 
-    .note{
-      margin-top:12px;
-      border:1px dashed var(--stroke);
-      border-radius:16px;
-      padding:12px 14px;
-      color:#b7cde5;
-      font-size:16px;
+    .footer {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .result{
-      margin-top:14px;
-      border:1px solid var(--stroke);
-      border-radius:16px;
-      background:rgba(6,22,40,.65);
-      padding:14px;
-      display:none;
+    .links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .result h3{
-      margin:0 0 8px;
-      font-size:24px;
-      line-height:1.2;
+    .links a {
+      font-size: 12px;
+      color: #475569;
+      text-decoration: none;
     }
-
-    .badge{
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:800;
-      letter-spacing:.2px;
-      margin-bottom:8px;
-    }
-
-    .badge.ok{background:rgba(68,214,120,.16); color:var(--ok); border:1px solid rgba(68,214,120,.35)}
-    .badge.warn{background:rgba(255,170,80,.16); color:var(--warn); border:1px solid rgba(255,170,80,.35)}
-    .badge.bad{background:rgba(255,98,98,.16); color:var(--bad); border:1px solid rgba(255,98,98,.35)}
-
-    .result p{margin:6px 0;color:#d3e6ff}
-    .result ul{margin:8px 0 0 18px;color:#e7f3ff}
-    .result li{margin:6px 0}
-
-    .keywords{
-      margin-top:16px;
-      display:flex;flex-wrap:wrap;gap:8px;
-    }
-
-    .keywords span{
-      border:1px solid var(--stroke);
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:14px;
-      color:#d6e8ff;
-      background:rgba(8,25,45,.5);
-    }
-
-    .disclaimer{
-      margin-top:16px;
-      font-size:15px;
-      color:#a8c0db;
-    }
-
-    .hidden-seo{
-      margin-top:26px;
-      border-top:1px solid rgba(165,196,229,.12);
-      padding-top:14px;
-      color:#b9d0e7;
-      font-size:15px;
-    }
-
-    .hidden-seo h2{
-      margin:0 0 8px;
-      font-size:22px;
-      color:#dff0ff;
-    }
-
-    @media (max-width: 920px){
-      .brand{font-size:32px}
-      .chip{font-size:15px}
-      .grid{grid-template-columns:1fr}
-      .field label{font-size:24px}
-      .input,.file-shell{height:58px;font-size:18px}
-      .cta{height:62px;font-size:26px}
-      .pricing{font-size:22px}
-      .checkout-row{grid-template-columns:1fr}
-    }
+    .links a:hover { text-decoration: underline; }
   </style>
-
-  <!-- Structured data -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@graph":[
-      {
-        "@type":"SoftwareApplication",
-        "name":"FairPrice",
-        "applicationCategory":"BusinessApplication",
-        "operatingSystem":"Web",
-        "description":"Upload a contractor quote and get a fairness breakdown in seconds using U.S. labor benchmark data."
-      },
-      {
-        "@type":"FAQPage",
-        "mainEntity":[
-          {
-            "@type":"Question",
-            "name":"How do I check if a contractor quote is fair?",
-            "acceptedAnswer":{"@type":"Answer","text":"Upload your quote and FairPrice compares pricing to labor benchmark data to generate an informational fairness estimate."}
-          },
-          {
-            "@type":"Question",
-            "name":"What quote types are checked most often?",
-            "acceptedAnswer":{"@type":"Answer","text":"Roofing, bathroom remodels, kitchen remodels, HVAC replacements, plumbing, electrical upgrades, flooring, and painting."}
-          }
-        ]
-      }
-    ]
-  }
-  </script>
 </head>
 
 <body>
-  <main class="wrap">
+  <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <span class="dot"></span>
-        <span>FairPrice</span>
+        <div class="logo">FP</div>
+        <div class="titleBlock">
+          <h1>FairPrice Quote Check</h1>
+          <p class="sub">Paste a quote or upload a file → get a fairness score + breakdown.</p>
+        </div>
       </div>
-      <div class="chip">Contractor quote check</div>
+      <div class="pill" title="Basic privacy note">No fluff • App-sized UI</div>
     </div>
 
-    <section aria-label="Hero">
-      <h1>See if a contractor is overcharging you.</h1>
-      <p class="sub">Based on official U.S. Bureau of Labor Statistics (BLS) data</p>
-      <p class="lead">Upload a quote → get a fairness breakdown in seconds, before you overpay.</p>
-
-      <div class="trust">
-        <span>No card needed for preview</span>
-        <span>Secure checkout by Stripe</span>
-        <span>PDF or image quotes</span>
-        <span>Results in seconds</span>
-      </div>
-    </section>
-
-    <section class="panel" aria-label="Upload quote">
-      <form id="quoteForm">
-        <div class="grid">
-          <div class="field">
-            <label>Upload quote (PDF / image)</label>
-            <div class="file-shell">
-              <label class="file-btn" for="quoteFile">Choose File</label>
-              <input id="quoteFile" name="quoteFile" type="file" accept=".pdf,image/*" required />
-              <span id="fileName" class="file-name">No file chosen</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Total quoted price</label>
-            <input id="totalPrice" name="totalPrice" class="input" type="text" inputmode="decimal" placeholder="e.g., 514.19" required />
-          </div>
+    <div class="card">
+      <div class="row2">
+        <div>
+          <label for="project">Project name (optional)</label>
+          <input id="project" type="text" placeholder="e.g., Kitchen remodel" autocomplete="off" />
         </div>
 
-        <button id="analyzeBtn" class="cta" type="submit">Upload Quote → Get Fairness Score</button>
-      </form>
-
-      <div class="pricing">
-        <strong>Free preview</strong> • $6.99 one report • $17.99 unlimited (30 days, this device)
+        <div>
+          <label for="email">Email (optional)</label>
+          <input id="email" type="email" placeholder="For sending the report" autocomplete="email" />
+        </div>
       </div>
 
-      <div class="checkout-row">
-        <a class="buy" href="https://buy.stripe.com/5kQaEP5e12xuf1SgcocV200" target="_blank" rel="noopener noreferrer">Buy 1 Report — $6.99</a>
-        <a class="buy" href="https://buy.stripe.com/9B64grcGt4FCg5W0dqcV201" target="_blank" rel="noopener noreferrer">Go Unlimited — $17.99</a>
+      <div class="grid">
+        <div>
+          <label for="quoteText">Paste quote text</label>
+          <textarea id="quoteText" placeholder="Paste line items, labor, materials, totals…"></textarea>
+        </div>
+
+        <div>
+          <label for="quoteFile">Or upload a file (optional)</label>
+          <input id="quoteFile" type="file" />
+          <div class="help">Tip: If you upload a file, you can still paste text — we’ll use what’s provided.</div>
+        </div>
       </div>
 
-      <div class="note">
-        <strong>Important:</strong> BLS/CPI benchmarks are informational estimates by region and scope.  
-        Not legal, financial, medical/health, tax, or insurance advice. No guarantees.
+      <div class="actions">
+        <button id="resetBtn" type="button">Reset</button>
+        <button id="analyzeBtn" type="button" class="primary">Generate Report</button>
       </div>
 
-      <div id="result" class="result" aria-live="polite"></div>
+      <div class="divider"></div>
 
-      <div class="keywords" aria-label="Common quote categories">
-        <span>Roof replacement quote check</span>
-        <span>Bathroom remodel estimate</span>
-        <span>Kitchen remodel quote</span>
-        <span>HVAC replacement quote</span>
-        <span>Plumbing repair estimate</span>
-        <span>Electrical panel quote check</span>
-        <span>Interior painting estimate</span>
-        <span>Flooring installation quote</span>
+      <div class="row2">
+        <div>
+          <label for="redeemCode">Redeem code (if you have one)</label>
+          <input id="redeemCode" type="text" placeholder="Enter code" autocomplete="off" />
+        </div>
+        <div class="actions" style="justify-content: flex-start; margin-top: 22px;">
+          <button id="redeemBtn" type="button">Redeem</button>
+          <!-- Optional: Stripe links (keep if you use them) -->
+          <a class="btnLink" id="oneTimeLink" href="https://buy.stripe.com/5kQaEP5e12xuf1SgcocV200" target="_blank" rel="noreferrer">
+            One-time ($6.99)
+          </a>
+          <a class="btnLink primary" id="subLink" href="https://buy.stripe.com/9B64grcGt4FCg5W0dqcV201" target="_blank" rel="noreferrer">
+            Subscribe ($17.99)
+          </a>
+        </div>
       </div>
 
-      <p class="disclaimer">
-        Disclaimer: Informational estimates only. Use at your own risk.
-      </p>
-    </section>
+      <div id="status" class="muted"></div>
+      <pre id="output" class="out" style="display:none;"></pre>
 
-    <!-- SEO-supporting content -->
-    <section class="hidden-seo">
-      <h2>Common quote-check searches</h2>
-      <p>
-        People often search: “is this contractor quote fair”, “contractor overcharging”, “home repair quote checker”,
-        “roof replacement quote check”, “HVAC replacement quote”, and “bathroom remodel estimate”.
-      </p>
-      <p>
-        FairPrice helps you validate quotes before signing so you can negotiate with more confidence and reduce overpayment risk.
-      </p>
-    </section>
-  </main>
+      <div class="footer">
+        <div class="muted">We don’t store your content longer than needed to generate the report.</div>
+        <div class="links">
+          <a href="#" onclick="alert('Add your Terms link here'); return false;">Terms</a>
+          <a href="#" onclick="alert('Add your Privacy link here'); return false;">Privacy</a>
+          <a href="#" onclick="alert('Add your Support link here'); return false;">Support</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const quoteForm = document.getElementById('quoteForm');
-    const quoteFile = document.getElementById('quoteFile');
-    const fileName = document.getElementById('fileName');
-    const totalPrice = document.getElementById('totalPrice');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const resultEl = document.getElementById('result');
+    // ===== Minimal JS (keeps things working on Vercel with /api/* endpoints) =====
+    // If your existing index.html already has JS logic, you can replace ONLY the CSS/layout portions above
+    // and keep your old <script> section. This script is intentionally lightweight and safe.
 
-    quoteFile.addEventListener('change', () => {
-      const f = quoteFile.files?.[0];
-      fileName.textContent = f ? f.name : 'No file chosen';
+    const $ = (id) => document.getElementById(id);
+
+    const statusEl = $("status");
+    const outputEl = $("output");
+    const analyzeBtn = $("analyzeBtn");
+    const redeemBtn = $("redeemBtn");
+    const resetBtn = $("resetBtn");
+
+    function setStatus(msg) {
+      statusEl.textContent = msg || "";
+    }
+
+    function showOutput(obj) {
+      outputEl.style.display = "block";
+      outputEl.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+    }
+
+    function clearOutput() {
+      outputEl.style.display = "none";
+      outputEl.textContent = "";
+    }
+
+    async function safeJson(res) {
+      const txt = await res.text();
+      try { return JSON.parse(txt); } catch { return { raw: txt, status: res.status }; }
+    }
+
+    resetBtn.addEventListener("click", () => {
+      $("project").value = "";
+      $("email").value = "";
+      $("quoteText").value = "";
+      $("quoteFile").value = "";
+      $("redeemCode").value = "";
+      setStatus("");
+      clearOutput();
     });
 
-    function escapeHtml(str = '') {
-      return String(str)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#39;');
-    }
+    analyzeBtn.addEventListener("click", async () => {
+      clearOutput();
+      setStatus("");
 
-    function badgeClass(verdict = '') {
-      const v = verdict.toLowerCase();
-      if (v.includes('fair') || v.includes('within')) return 'ok';
-      if (v.includes('high') || v.includes('caution') || v.includes('above')) return 'warn';
-      if (v.includes('over') || v.includes('unfair')) return 'bad';
-      return 'warn';
-    }
+      const quoteText = $("quoteText").value.trim();
+      const project = $("project").value.trim();
+      const email = $("email").value.trim();
+      const file = $("quoteFile").files?.[0] || null;
 
-    function renderResult(data) {
-      const verdict = data.verdict || data.status || 'Preview ready';
-      const score = data.fairnessScore ?? data.score ?? null;
-      const summary = data.summary || data.message || 'Quote analyzed successfully.';
-      const rangeMin = data?.benchmarkRange?.min ?? data?.rangeMin ?? null;
-      const rangeMax = data?.benchmarkRange?.max ?? data?.rangeMax ?? null;
-      const flags = Array.isArray(data.flags) ? data.flags : (Array.isArray(data.reasons) ? data.reasons : []);
+      if (!quoteText && !file) {
+        setStatus("Please paste quote text or upload a file.");
+        return;
+      }
 
-      const badge = `<span class="badge ${badgeClass(verdict)}">${escapeHtml(verdict)}</span>`;
-      const scoreLine = score !== null ? `<p><strong>Fairness score:</strong> ${escapeHtml(String(score))}</p>` : '';
-      const rangeLine = (rangeMin !== null && rangeMax !== null)
-        ? `<p><strong>Estimated fair range:</strong> $${escapeHtml(String(rangeMin))} – $${escapeHtml(String(rangeMax))}</p>`
-        : '';
-
-      const flagsHtml = flags.length
-        ? `<ul>${flags.map(f => `<li>${escapeHtml(String(f))}</li>`).join('')}</ul>`
-        : '';
-
-      resultEl.innerHTML = `
-        ${badge}
-        <h3>Quote Check Preview</h3>
-        ${scoreLine}
-        ${rangeLine}
-        <p>${escapeHtml(summary)}</p>
-        ${flagsHtml}
-        <p><strong>Next step:</strong> Purchase a full report for deeper breakdown and recommendations.</p>
-      `;
-      resultEl.style.display = 'block';
-    }
-
-    function renderError(msg) {
-      resultEl.innerHTML = `
-        <span class="badge bad">Unable to analyze</span>
-        <h3>Something went wrong</h3>
-        <p>${escapeHtml(msg || 'Please try again.')}</p>
-      `;
-      resultEl.style.display = 'block';
-    }
-
-    quoteForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const file = quoteFile.files?.[0];
-      const total = totalPrice.value?.trim();
-
-      if (!file) return renderError('Please upload a quote file.');
-      if (!total) return renderError('Please enter the total quoted price.');
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "Working…";
+      setStatus("Analyzing…");
 
       try {
-        analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Analyzing quote...';
+        // If you have an existing /api/analyze endpoint, this will work.
+        // If your endpoint expects a different payload, update only the body shape below.
+        let payload;
+        let headers = {};
 
-        const fd = new FormData();
-
-        // Include multiple common field names to match existing backend expectations
-        fd.append('file', file);
-        fd.append('quote', file);
-        fd.append('upload', file);
-
-        fd.append('total', total);
-        fd.append('price', total);
-        fd.append('totalPrice', total);
-        fd.append('totalQuotedPrice', total);
-
-        const res = await fetch('/api/analyze', { method: 'POST', body: fd });
-        const text = await res.text();
-
-        let data;
-        try { data = JSON.parse(text); }
-        catch { data = { message: text || 'No JSON response returned.' }; }
-
-        if (!res.ok) {
-          return renderError(data.error || data.message || `HTTP ${res.status}`);
+        if (file) {
+          // multipart for file
+          const fd = new FormData();
+          if (quoteText) fd.append("quoteText", quoteText);
+          if (project) fd.append("project", project);
+          if (email) fd.append("email", email);
+          fd.append("file", file);
+          payload = fd;
+        } else {
+          headers["Content-Type"] = "application/json";
+          payload = JSON.stringify({ quoteText, project, email });
         }
 
-        renderResult(data);
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers,
+          body: payload,
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) {
+          setStatus("Analyze failed.");
+          showOutput(data);
+          return;
+        }
+
+        setStatus("Done.");
+        showOutput(data);
+
       } catch (err) {
-        renderError(err?.message || 'Unexpected error.');
+        setStatus("Error running analysis.");
+        showOutput({ error: String(err) });
       } finally {
         analyzeBtn.disabled = false;
-        analyzeBtn.textContent = 'Upload Quote → Get Fairness Score';
+        analyzeBtn.textContent = "Generate Report";
+      }
+    });
+
+    redeemBtn.addEventListener("click", async () => {
+      clearOutput();
+      setStatus("");
+
+      const code = $("redeemCode").value.trim();
+      if (!code) {
+        setStatus("Enter a redeem code first.");
+        return;
+      }
+
+      redeemBtn.disabled = true;
+      redeemBtn.textContent = "Checking…";
+      setStatus("Redeeming…");
+
+      try {
+        const res = await fetch("/api/redeem", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+
+        const data = await safeJson(res);
+        if (!res.ok) {
+          setStatus("Redeem failed.");
+          showOutput(data);
+          return;
+        }
+
+        setStatus("Redeem successful.");
+        showOutput(data);
+
+      } catch (err) {
+        setStatus("Error redeeming code.");
+        showOutput({ error: String(err) });
+      } finally {
+        redeemBtn.disabled = false;
+        redeemBtn.textContent = "Redeem";
       }
     });
   </script>
